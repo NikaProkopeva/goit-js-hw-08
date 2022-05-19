@@ -1,26 +1,31 @@
 import Player from '@vimeo/player';
 
 const iframe = document.querySelector('iframe');
+import throttle from 'lodash.throttle';
 const player = new Vimeo.Player(iframe);
-const LOCALSTORAGE_KEY = 'videoplayer-current-time';
-player.on('timeupdate', onPlay);
-player.on('loaded', updateTime);
-function onPlay() {
-  player.getCurrentTime().then(function (seconds) {
-    localStorage.setItem(LOCALSTORAGE_KEY, seconds);
+console.log('The best HW8');
+
+player.on('play', function () {
+  console.log('played the video!');
+});
+
+const onPlay = function (data) {
+  localStorage.setItem('videoplayer-current-time', data.seconds);
+};
+
+player.on('timeupdate', throttle(onPlay, 1000));
+
+player
+  .setCurrentTime(Number(localStorage.getItem('videoplayer-current-time')))
+  .then(function (seconds) {})
+  .catch(function (error) {
+    switch (error.name) {
+      case 'RangeError':
+        console.log('Error!!!');
+        break;
+
+      default:
+        console.log('Other error');
+        break;
+    }
   });
-}
-function updateTime() {
-  const savedTime = localStorage.getItem(LOCALSTORAGE_KEY);
-  player
-    .setCurrentTime(savedTime)
-    .then(function (seconds) {
-      console.log(seconds);
-    })
-    .catch(function (error) {
-      switch (error.name) {
-        case 'RangeError':
-          break;
-      }
-    });
-}
